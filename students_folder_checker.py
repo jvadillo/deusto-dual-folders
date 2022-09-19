@@ -63,7 +63,7 @@ logging.basicConfig(
     level=logging.DEBUG,
     datefmt='%Y-%m-%d %H:%M:%S')
 
-def isValidName(file_name, valid_document_names):
+def is_valid_name(file_name, valid_document_names):
     """"Checks if the given string is included in any of the patterns (string list).
 
         Paramenters:
@@ -88,7 +88,7 @@ def check_folder_status(filenames, valid_document_names):
             folder_status (dict): dictionary with the result after checking all the filenames
     """
 
-    # Before start checking documents, set all of them to false (not found)
+    # Before start checking documents, set all of them to False (not found)
     folder_status = {
         'Documento de seguimiento' : False,
         'Diario de aprendizaje' : False,
@@ -98,7 +98,7 @@ def check_folder_status(filenames, valid_document_names):
     }
     for filename in filenames:
         for key in folder_status :
-            result = isValidName(filename, valid_document_names[key])
+            result = is_valid_name(filename, valid_document_names[key])
             if result:
                 folder_status[key] = True
                 continue

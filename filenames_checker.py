@@ -53,7 +53,7 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 
-def isValidName(file_name, valid_document_names):
+def is_valid_name(file_name, valid_document_names):
     """"Checks if the given string is included in any of the patterns (string list).
 
         Paramenters:
@@ -100,7 +100,7 @@ for folder in students_folders:
             files = os.listdir(full_path)
             
             for filename in files:
-                is_file_ok = isValidName(filename, VALID_DOCUMENT_NAMES)
+                is_file_ok = is_valid_name(filename, VALID_DOCUMENT_NAMES)
                 subject_folders_result[subject_folder].append({
                         filename : is_file_ok
                 })
