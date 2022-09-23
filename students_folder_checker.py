@@ -2,16 +2,20 @@ import os
 import logging
 import csv
 import configparser
+import datetime
 
 # Load global variables from config.ini configuration file
 config = configparser.ConfigParser()
-config.read('students_folder_checker_config.ini')
+config.read('config/students_folder_checker_config.ini')
 
 FOLDERS_PATH = config['BASIC']['folders_path']
 OUTPUT_CSV_PATH = config['BASIC']['output_csv_file']
 FILENAMES_YEAR = config['BASIC']['filenames_year']
+MODIFICATION_DATE_STR = config['BASIC']['modified_date_filter']
+# Convert date string to datetime object:
+MODIFICATION_DATETIME = datetime.datetime.strptime(MODIFICATION_DATE_STR, '%d-%m-%Y')
 LOGGING_FILENAME = config['LOGGING']['logging_filename']
-FILENAMES_YEAR = config['BASIC']['filenames_year']
+
 
 # Valid file names for each document type
 VALID_DOCUMENT_NAMES = {
@@ -62,6 +66,27 @@ logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',
     level=logging.DEBUG,
     datefmt='%Y-%m-%d %H:%M:%S')
+    
+
+
+def get_modification_datetime(path):
+    try:
+        # file modification timestamp of a file
+        m_timestamp = os.path.getmtime(path)
+        # convert timestamp into DateTime object
+        m_datetime = datetime.datetime.fromtimestamp(m_timestamp)
+        return m_datetime
+    except Exception as e:
+        logging.error(e)
+
+def is_newer(file_datetime, limit_datetime):
+    try:
+        if file_datetime > limit_datetime:
+            return True
+    except Exception as e:
+        logging.error(e)
+    return False
+
 
 def is_valid_name(file_name, valid_document_names):
     """"Checks if the given string is included in any of the patterns (string list).
@@ -78,11 +103,12 @@ def is_valid_name(file_name, valid_document_names):
             return True
     return False
 
-def check_folder_status(filenames, valid_document_names):
+def check_folder_status(path, valid_document_names, modification_date):
     """ Checks all the given filenames looking for filename patterns.
 
         Parameters:
-            filenames (list): list with all the filenames that will be scanned.
+            path (str): folder path that contains all the files that will be scanned.
+            valid_document_names (list): list containing all valid file names.
 
         Returns:
             folder_status (dict): dictionary with the result after checking all the filenames
@@ -96,12 +122,19 @@ def check_folder_status(filenames, valid_document_names):
         'Evaluación parcial de estancia en empresa' : False,
         'Evaluación final de estancia en empresa' : False
     }
-    for filename in filenames:
+    file_names = os.listdir(path)
+    for filename in file_names:
         for key in folder_status :
-            result = is_valid_name(filename, valid_document_names[key])
-            if result:
+            # Check if the current file has been already found:
+            if folder_status[key] == True:
+                continue # Continue with the next file
+            # Check if the current filename is OK for the current file:
+            if (
+                is_valid_name(filename, valid_document_names[key]) and
+                is_newer(get_modification_datetime(os.path.join(path, filename)), modification_date)
+            ):
                 folder_status[key] = True
-                continue
+                break
     logging.info(folder_status)
     return folder_status
 
@@ -135,7 +168,7 @@ def write_result_to_csv(students, output_csv_path):
 
 
 logging.info('Starting script...')
-logging.info(f'Patrones aceptados: {VALID_DOCUMENT_NAMES}')
+logging.info(f'Valid document filenames: {VALID_DOCUMENT_NAMES}')
 
 students = []
 students_folders = [name for name in os.listdir(FOLDERS_PATH) if os.path.isdir(os.path.join(FOLDERS_PATH, name))]
@@ -147,16 +180,15 @@ for folder in students_folders:
         'Name' : folder,
         'Folders' : []
     }
-    for f in student_folders_names:
+    for folder_name in student_folders_names:
         student_folder = {
-            'Foldername' : f,
+            'Foldername' : folder_name,
             'Files' : []
         }
-        full_path = os.path.join(FOLDERS_PATH+folder, f)
-        if os.path.isdir(full_path) and '2021.22' in f:
-            logging.info(f'---------> {f}')
-            files = os.listdir(full_path)
-            folder_status = check_folder_status(files, VALID_DOCUMENT_NAMES)
+        full_path = os.path.join(FOLDERS_PATH+folder, folder_name)
+        if os.path.isdir(full_path) and FILENAMES_YEAR in folder_name:
+            logging.info(f'---------> {folder_name}')
+            folder_status = check_folder_status(full_path, VALID_DOCUMENT_NAMES, MODIFICATION_DATETIME)
             student_folder['Files'] = folder_status
             student['Folders'].append(student_folder)
     students.append(student)

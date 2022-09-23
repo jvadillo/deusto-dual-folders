@@ -4,7 +4,7 @@ import configparser
 
 # Load global variables from config.ini configuration file
 config = configparser.ConfigParser()
-config.read('filenames_checker_config.ini')
+config.read('config/filenames_checker_config.ini')
 
 FOLDERS_PATH = config['BASIC']['folders_path']
 FILENAMES_YEAR = config['BASIC']['filenames_year']
@@ -62,7 +62,9 @@ def is_valid_name(file_name, valid_document_names):
         Return
             (bool): True if the given string is included in any of the strings of the list.
     """
-    upper_file_name = file_name.upper()    
+    upper_file_name = file_name.upper()
+    if file_name in "APELLIDOS_NOMBRE": # File name has not been renamed with the student name:
+        return False  
     for filename in valid_document_names:
         if filename.upper() in upper_file_name:
             return True
