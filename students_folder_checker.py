@@ -34,26 +34,31 @@ VALID_DOCUMENT_NAMES = {
         '_Diario_Aprendizaje_S2_20212022',
         '_Diario_Aprendizaje_2021_2022',
         '_Diario_Aprendizaje_20212022',
-        'Diario_Aprendizaje_S1'
-        'Diario_Aprendizaje_S2'
+        'Diario_Aprendizaje_S1',
+        'Diario_Aprendizaje_S2',
     ],
     'Evaluación del diario' : [
         '_Ev_Diario_S1',
         '_Ev_Diario_S2',
+        '_Ev_Diario',
         'Evaluacion Diario de Aprendizaje_S1',
         'Evaluacion Diario de Aprendizaje_S2',
     ],
     'Evaluación parcial de estancia en empresa' : [
         '_Ev_Empresa_S1_Parcial',
         '_Ev_Empresa_S2_Parcial',
+        '_Ev_Empresa_Parcial',
         'Evaluacion Trabajo en Empresa_S1_Parcial',
         'Evaluacion Trabajo en Empresa_S2_Parcial',
+        'Evaluacion Trabajo en Empresa_Parcial',
     ],
     'Evaluación final de estancia en empresa' : [
         '_Ev_Empresa_S1_Final',
         '_Ev_Empresa_S2_Final',
+        '_Ev_Empresa_Final',
         'Evaluacion Trabajo en Empresa_S1_Final',
         'Evaluacion Trabajo en Empresa_S2_Final',
+        'Evaluacion Trabajo en Empresa_Final',
     ],
     'PFG' : [
         'Diario_de_aprendizaje_PFG_DUAL'
@@ -85,6 +90,8 @@ def is_newer(file_datetime, limit_datetime):
             return True
     except Exception as e:
         logging.error(e)
+    logging.info(f'¡Fichero antiguo! ::: file_datetime = {file_datetime} / limit_datetime= {limit_datetime}')
+
     return False
 
 
@@ -124,15 +131,15 @@ def check_folder_status(path, valid_document_names, modification_date):
     }
     file_names = os.listdir(path)
     for filename in file_names:
+        # if it is an old file -> skip it
+        if not is_newer(get_modification_datetime(os.path.join(path, filename)), modification_date):
+            continue
         for key in folder_status :
             # Check if the current file has been already found:
             if folder_status[key] == True:
                 continue # Continue with the next file
             # Check if the current filename is OK for the current file:
-            if (
-                is_valid_name(filename, valid_document_names[key]) and
-                is_newer(get_modification_datetime(os.path.join(path, filename)), modification_date)
-            ):
+            if is_valid_name(filename, valid_document_names[key]):
                 folder_status[key] = True
                 break
     logging.info(folder_status)
