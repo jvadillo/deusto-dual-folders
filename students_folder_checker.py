@@ -40,13 +40,17 @@ VALID_DOCUMENT_NAMES = {
     'Evaluación del diario' : [
         '_Ev_Diario_S1',
         '_Ev_Diario_S2',
+        '_Ev_Diario_Sem1',
+        '_Ev_Diario_Sem2',
         '_Ev_Diario',
         'Evaluacion Diario de Aprendizaje_S1',
         'Evaluacion Diario de Aprendizaje_S2',
     ],
     'Evaluación parcial de estancia en empresa' : [
         '_Ev_Empresa_S1_Parcial',
+        '_Ev_Empresa_Sem1_Parcial',
         '_Ev_Empresa_S2_Parcial',
+        '_Ev_Empresa_Sem2_Parcial',
         '_Ev_Empresa_Parcial',
         'Evaluacion Trabajo en Empresa_S1_Parcial',
         'Evaluacion Trabajo en Empresa_S2_Parcial',
